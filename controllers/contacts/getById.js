@@ -2,7 +2,7 @@ const contacts = require("../../models/contacts");
 
 const { RequestError } = require("../../helpers");
 
-const getBuId = async (req, res, next) => {
+const getBuId = async (req, res) => {
   const { contactId } = req.params;
   const result = await contacts.getContactById(contactId);
 
