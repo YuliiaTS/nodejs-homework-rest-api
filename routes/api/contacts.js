@@ -1,89 +1,25 @@
 const express = require("express");
 
-const Joi = require("joi");
+const ctrl = require("../../controllers/contacts");
 
-const contacts = require("../../models/contacts");
+const ctrlWrapper = require("../../helpers/ctrlWrapper");
 
-const { RequestError } = require("../../helpers/index");
+const {validateBody, isValidId} = require("../../middlewares");
+
+const {schemas} = require("../../models/contact");
 
 const router = express.Router();
 
-const addSchema = Joi.object({
-  name: Joi.string().required(),
-  email: Joi.string().required(),
-  phone: Joi.string().required(),
-});
+router.get("/", ctrlWrapper(ctrl.getAll));
 
-router.get("/", async (req, res, next) => {
-  try {
-    const result = await contacts.listContacts();
+router.get("/:contactId", isValidId, ctrlWrapper(ctrl.getBuId));
 
-    res.json({ status: "success", code: 200, data: result });
-  } catch (error) {
-    next(error);
-  }
-});
+router.post("/", validateBody(schemas.addSchema), ctrlWrapper(ctrl.add));
 
-router.get("/:contactId", async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    const result = await contacts.getContactById(contactId);
+router.delete("/:contactId", isValidId, ctrlWrapper(ctrl.removeById));
 
-    if (!result) {
-      throw RequestError(404, `Not found`);
-    }
-    res.json({ status: "success", code: 200, data: result });
-  } catch (error) {
-    next(error);
-  }
-});
+router.put("/:contactId", isValidId, validateBody(schemas.addSchema), ctrlWrapper(ctrl.updateById));
 
-router.post("/", async (req, res, next) => {
-  try {
-    const { error } = addSchema.validate(req.body);
-    if (error) {
-      throw RequestError(400, `Missing required name field`);
-    }
-    const result = await contacts.addContact(req.body);
-    res.status(201).json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.delete("/:contactId", async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    const result = await contacts.removeContact(contactId);
-    if (!result) {
-      throw RequestError(404, `Not found`);
-    }
-    res.json({
-      status: "success",
-      code: 200,
-      message: "contact deleted",
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.put("/:contactId", async (req, res, next) => {
-  try {
-    const { error } = addSchema.validate(req.body);
-    if (error) {
-      throw RequestError(400, `Missing fields`);
-    }
-    const { contactId } = req.params;
-    const result = await contacts.updateContact(contactId, req.body);
-    if (!result) {
-      throw RequestError(404, `Not found`);
-    }
-    res.json({ status: "success", code: 200, data: result });
-  } catch (error) {
-    next(error);
-  }
-});
+router.patch("/:contactId/favorite", isValidId, validateBody(schemas.updateFavoriteSchema), ctrlWrapper(ctrl.updateFavorite));
 
 module.exports = router;
