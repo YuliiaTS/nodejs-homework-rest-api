@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+
 const {User} = require('../../models/user')
 
 const {RequestError} = require('../../helpers')
@@ -8,7 +10,8 @@ const register = async(req, res) => {
     if(user) {
         throw RequestError(409, 'Email is use')
     }
-    const result = await User.create({password, email, subscription})
+    const hashPassword = await bcrypt.hash(password, 10)
+    const result = await User.create({pasaword: hashPassword, email, subscription})
     
     res.status(201).json({
         email: result.email,
