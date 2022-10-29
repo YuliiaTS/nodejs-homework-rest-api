@@ -33,13 +33,13 @@ const User = model("user", userSchema);
 
 const registerSchema = Joi.object({
     password: Joi.string().required(),
-    email: Joi.string().pattern(emailRegexp).required(),
-    subscription: Joi.string().required(),
+    email: Joi.string().pattern(emailRegexp).trim().required(),
+    subscription: Joi.string().valid('starter', 'pro', 'business').required(),
 });
 
 const loginSchema = Joi.object({
     password: Joi.string().required(),
-    email: Joi.string().pattern(emailRegexp).required(),
+    email: Joi.string().pattern(emailRegexp).trim().required(),
 });
 
 const schemas = {
