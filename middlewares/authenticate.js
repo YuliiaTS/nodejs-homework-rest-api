@@ -17,14 +17,14 @@ const authenticate = async (req, res, next) => {
 
     const user = await User.findById(id);
 
-    if (!user) {
+    if (!user || user.token !== token) {
       throw RequestError(401, "Not authorized");
     }
 
     req.user = user;
     next();
   } catch (error) {
-    if (error.message === "invalid signature") {
+    if (error.message === "Invalid signature") {
       error.status = 401;
     }
     next(error);
